@@ -17,8 +17,7 @@ class ConfigureProxies
         }
 
         if ($trusted === '*') {
-            $remote = $request->server->get('REMOTE_ADDR');
-            $proxies = is_string($remote) && $remote !== '' ? [$remote] : [];
+            $proxies = ['0.0.0.0/0', '::/0'];
         } else {
             $proxies = array_values(array_filter(array_map('trim', explode(',', $trusted))));
         }

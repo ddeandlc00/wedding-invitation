@@ -3,6 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use App\Support\Https;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Fortify\Features;
@@ -17,6 +18,32 @@ class AuthenticationTest extends TestCase
         $response = $this->get(route('login'));
 
         $response->assertOk();
+    }
+
+    public function test_forwarded_https_is_recognized_before_redirects_are_built(): void
+    {
+        $originalProto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? null;
+        $originalHttps = $_SERVER['HTTPS'] ?? null;
+
+        $_SERVER['HTTP_X_FORWARDED_PROTO'] = 'https';
+        $_SERVER['HTTPS'] = 'off';
+
+        Https::honorForwardedProto();
+
+        $this->assertSame('on', $_SERVER['HTTPS']);
+        $this->assertSame('443', (string) $_SERVER['SERVER_PORT']);
+
+        if ($originalProto === null) {
+            unset($_SERVER['HTTP_X_FORWARDED_PROTO']);
+        } else {
+            $_SERVER['HTTP_X_FORWARDED_PROTO'] = $originalProto;
+        }
+
+        if ($originalHttps === null) {
+            unset($_SERVER['HTTPS']);
+        } else {
+            $_SERVER['HTTPS'] = $originalHttps;
+        }
     }
 
     public function test_users_can_authenticate_using_the_login_screen()
