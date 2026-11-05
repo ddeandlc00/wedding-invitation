@@ -2,6 +2,9 @@ import { useForm, usePage } from '@inertiajs/react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export function InvitationCodeForm() {
     const form = useForm({ code: '' });
@@ -18,42 +21,31 @@ export function InvitationCodeForm() {
             }}
         >
             <div className="space-y-2">
-                <label htmlFor="invitation-code" className="text-sm tracking-wide">
-                    Invitation code
-                </label>
+                <Label htmlFor="invitation-code">Invitation code</Label>
                 <div className="flex gap-2">
-                    <input
+                    <Input
                         id="invitation-code"
                         value={form.data.code}
-                        onChange={(event) => form.setData('code', event.target.value)}
+                        onChange={(event) => form.setData('code', event.target.value.toUpperCase())}
                         type={visible ? 'text' : 'password'}
                         autoComplete="off"
                         autoCapitalize="characters"
                         spellCheck={false}
                         aria-invalid={message ? true : undefined}
                         aria-describedby={message ? 'invitation-code-error' : undefined}
-                        className="h-12 w-full border border-champagne/60 bg-paper px-4 tracking-[0.12em] outline-none focus:border-sage"
-                        placeholder="Enter your code"
+                        className="h-12 bg-paper tracking-[0.2em]"
+                        placeholder="ABCD-1234"
                     />
-                    <button
-                        type="button"
-                        className="inline-flex size-12 items-center justify-center border border-champagne/60"
-                        onClick={() => setVisible((value) => !value)}
-                        aria-pressed={visible}
-                    >
-                        {visible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    <Button type="button" variant="outline" size="icon" className="size-12" aria-pressed={visible} onClick={() => setVisible((value) => !value)}>
+                        {visible ? <EyeOff /> : <Eye />}
                         <span className="sr-only">{visible ? 'Hide invitation code' : 'Show invitation code'}</span>
-                    </button>
+                    </Button>
                 </div>
                 <InputError id="invitation-code-error" message={message} />
             </div>
-            <button
-                type="submit"
-                disabled={form.processing}
-                className="h-12 w-full bg-sage px-6 text-sm tracking-[0.16em] text-paper uppercase disabled:opacity-60"
-            >
+            <Button type="submit" disabled={form.processing} className="h-12 w-full rounded-full tracking-[0.14em] uppercase">
                 {form.processing ? 'Checking…' : 'Open invitation'}
-            </button>
+            </Button>
         </form>
     );
 }

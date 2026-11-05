@@ -7,6 +7,17 @@ use Throwable;
 
 class WeddingClock
 {
+    public static function zoneLabel(?string $timezone): string
+    {
+        $zone = self::timezone($timezone);
+
+        if ($zone === 'Asia/Manila') {
+            return 'Philippine Time (UTC+8)';
+        }
+
+        return $zone;
+    }
+
     public static function timezone(?string $timezone): string
     {
         if (is_string($timezone) && in_array($timezone, timezone_identifiers_list(), true)) {
@@ -46,7 +57,7 @@ class WeddingClock
 
         $zone = self::timezone($timezone);
 
-        return $instant->timezone($zone)->format('g:i A').' '.$zone;
+        return $instant->timezone($zone)->format('g:i A').' '.self::zoneLabel($zone);
     }
 
     public static function dateTimeLabel(?CarbonImmutable $instant, ?string $timezone): ?string

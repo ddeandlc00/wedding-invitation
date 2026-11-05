@@ -36,7 +36,6 @@ export type WeddingShared = {
     timezone: string;
     theme: WeddingTheme;
     countdown: CountdownPayload;
-    heroUrl: string | null;
     contactEmail: string | null;
     contactPhone: string | null;
     navigation: WeddingNavItem[];

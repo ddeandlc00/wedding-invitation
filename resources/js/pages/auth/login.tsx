@@ -1,27 +1,21 @@
 import { Form, Head } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
-import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { store } from '@/routes/login';
-import { request } from '@/routes/password';
-import PasskeyVerify from '@/components/passkey-verify';
 
 type Props = {
     status?: string;
     canResetPassword: boolean;
 };
 
-export default function Login({ status, canResetPassword }: Props) {
+export default function Login({ status }: Props) {
     return (
         <>
             <Head title="Log in" />
-
-            <PasskeyVerify />
 
             <Form
                 {...store.form()}
@@ -47,18 +41,7 @@ export default function Login({ status, canResetPassword }: Props) {
                             </div>
 
                             <div className="grid gap-2">
-                                <div className="flex items-center">
-                                    <Label htmlFor="password">Password</Label>
-                                    {canResetPassword && (
-                                        <TextLink
-                                            href={request()}
-                                            className="ml-auto text-sm"
-                                            tabIndex={5}
-                                        >
-                                            Forgot your password?
-                                        </TextLink>
-                                    )}
-                                </div>
+                                <Label htmlFor="password">Password</Label>
                                 <PasswordInput
                                     id="password"
                                     name="password"
@@ -71,17 +54,20 @@ export default function Login({ status, canResetPassword }: Props) {
                             </div>
 
                             <div className="flex items-center space-x-3">
-                                <Checkbox
+                                <input
                                     id="remember"
                                     name="remember"
+                                    type="checkbox"
+                                    value="1"
                                     tabIndex={3}
+                                    className="size-4 rounded border border-input accent-[#afa1d8]"
                                 />
                                 <Label htmlFor="remember">Remember me</Label>
                             </div>
 
                             <Button
                                 type="submit"
-                                className="mt-4 w-full"
+                                className="mt-4 w-full bg-[#afa1d8] text-[#3c4034] hover:bg-[#c8bee8]"
                                 tabIndex={4}
                                 disabled={processing}
                                 data-test="login-button"
@@ -99,7 +85,7 @@ export default function Login({ status, canResetPassword }: Props) {
             </Form>
 
             {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
+                <div className="mb-4 text-center text-sm font-medium text-green-700">
                     {status}
                 </div>
             )}

@@ -23,7 +23,7 @@ class ContentController extends Controller
         WeddingEvent::query()->create($this->eventAttributes($request));
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Event added.']);
 
-        return back();
+        return to_route('admin.settings.edit');
     }
 
     public function updateEvent(Request $request, WeddingEvent $weddingEvent): RedirectResponse
@@ -32,7 +32,7 @@ class ContentController extends Controller
         $weddingEvent->update($this->eventAttributes($request));
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Event updated.']);
 
-        return back();
+        return to_route('admin.settings.edit');
     }
 
     public function destroyEvent(WeddingEvent $weddingEvent): RedirectResponse
@@ -41,45 +41,25 @@ class ContentController extends Controller
         $weddingEvent->delete();
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Event removed.']);
 
-        return back();
+        return to_route('admin.settings.edit');
     }
 
     public function storeMoment(Request $request): RedirectResponse
     {
         $this->authorize('manage', Invitation::class);
-        $attributes = $this->momentAttributes($request);
-        $file = $request->file('image');
-
-        if ($file !== null) {
-            $attributes['image_path'] = PublicMedia::store($file, 'wedding/story');
-        }
-
-        StoryMoment::query()->create($attributes);
+        StoryMoment::query()->create($this->momentAttributes($request));
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Story moment added.']);
 
-        return back();
+        return to_route('admin.settings.edit');
     }
 
     public function updateMoment(Request $request, StoryMoment $storyMoment): RedirectResponse
     {
         $this->authorize('manage', Invitation::class);
-        $attributes = $this->momentAttributes($request);
-        $file = $request->file('image');
-
-        if ($file !== null) {
-            PublicMedia::delete($storyMoment->image_path);
-            $attributes['image_path'] = PublicMedia::store($file, 'wedding/story');
-        }
-
-        if ($request->boolean('remove_image')) {
-            PublicMedia::delete($storyMoment->image_path);
-            $attributes['image_path'] = null;
-        }
-
-        $storyMoment->update($attributes);
+        $storyMoment->update($this->momentAttributes($request));
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Story moment updated.']);
 
-        return back();
+        return to_route('admin.settings.edit');
     }
 
     public function destroyMoment(StoryMoment $storyMoment): RedirectResponse
@@ -89,7 +69,7 @@ class ContentController extends Controller
         $storyMoment->delete();
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Story moment removed.']);
 
-        return back();
+        return to_route('admin.settings.edit');
     }
 
     public function storeFaq(Request $request): RedirectResponse
@@ -98,7 +78,7 @@ class ContentController extends Controller
         Faq::query()->create($this->faqAttributes($request));
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Question added.']);
 
-        return back();
+        return to_route('admin.settings.edit');
     }
 
     public function updateFaq(Request $request, Faq $faq): RedirectResponse
@@ -107,7 +87,7 @@ class ContentController extends Controller
         $faq->update($this->faqAttributes($request));
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Question updated.']);
 
-        return back();
+        return to_route('admin.settings.edit');
     }
 
     public function destroyFaq(Faq $faq): RedirectResponse
@@ -116,7 +96,7 @@ class ContentController extends Controller
         $faq->delete();
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Question removed.']);
 
-        return back();
+        return to_route('admin.settings.edit');
     }
 
     public function storeImage(Request $request): RedirectResponse
@@ -145,7 +125,7 @@ class ContentController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Photograph added.']);
 
-        return back();
+        return to_route('admin.settings.edit');
     }
 
     public function destroyImage(GalleryImage $galleryImage): RedirectResponse
@@ -155,7 +135,7 @@ class ContentController extends Controller
         $galleryImage->delete();
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Photograph removed.']);
 
-        return back();
+        return to_route('admin.settings.edit');
     }
 
     /**
@@ -202,8 +182,6 @@ class ContentController extends Controller
             'caption' => ['nullable', 'string', 'max:240'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:9999'],
             'is_sample' => ['sometimes', 'boolean'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
-            'remove_image' => ['sometimes', 'boolean'],
         ]);
 
         return [

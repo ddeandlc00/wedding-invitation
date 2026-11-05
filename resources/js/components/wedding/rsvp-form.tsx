@@ -3,7 +3,7 @@ import { FormEvent } from 'react';
 import InputError from '@/components/input-error';
 import type { GuestInvitation, GuestRsvp, PublicEvent } from '@/types/wedding';
 
-type Guest = { name: string; dietary_requirement: string };
+type Guest = { name: string };
 
 export function RsvpForm({
     invitation,
@@ -19,7 +19,6 @@ export function RsvpForm({
     const form = useForm({
         attendance_status: existing?.attendanceStatus ?? 'attending',
         attendee_count: initialCount,
-        dietary_requirements: existing?.dietaryRequirements ?? '',
         message_to_couple: existing?.messageToCouple ?? '',
         guests: normalizeGuests(existing, initialCount),
         event_ids: existing?.eventIds ?? events.map((event) => event.id),
@@ -98,30 +97,18 @@ export function RsvpForm({
                         <fieldset className="space-y-3" disabled={closed}>
                             <legend className="text-sm">Names of attending guests</legend>
                             {form.data.guests.map((guest, index) => (
-                                <div key={index} className="grid gap-2 sm:grid-cols-2">
-                                    <input
-                                        aria-label={`Guest ${index + 1} name`}
-                                        value={guest.name}
-                                        onChange={(event) => {
-                                            const guests = [...form.data.guests];
-                                            guests[index] = { ...guest, name: event.target.value };
-                                            form.setData('guests', guests);
-                                        }}
-                                        className="h-11 border border-champagne/60 bg-paper px-3"
-                                        placeholder={`Guest ${index + 1}`}
-                                    />
-                                    <input
-                                        aria-label={`Guest ${index + 1} dietary note`}
-                                        value={guest.dietary_requirement}
-                                        onChange={(event) => {
-                                            const guests = [...form.data.guests];
-                                            guests[index] = { ...guest, dietary_requirement: event.target.value };
-                                            form.setData('guests', guests);
-                                        }}
-                                        className="h-11 border border-champagne/60 bg-paper px-3"
-                                        placeholder="Dietary note, optional"
-                                    />
-                                </div>
+                                <input
+                                    key={index}
+                                    aria-label={`Guest ${index + 1} name`}
+                                    value={guest.name}
+                                    onChange={(event) => {
+                                        const guests = [...form.data.guests];
+                                        guests[index] = { name: event.target.value };
+                                        form.setData('guests', guests);
+                                    }}
+                                    className="h-11 w-full border border-champagne/60 bg-paper px-3"
+                                    placeholder={`Guest ${index + 1}`}
+                                />
                             ))}
                             <InputError message={form.errors.guests} />
                         </fieldset>
@@ -149,16 +136,6 @@ export function RsvpForm({
                         </fieldset>
                     )}
 
-                    <label className="block space-y-2 text-sm">
-                        Dietary requirements
-                        <textarea
-                            value={form.data.dietary_requirements}
-                            disabled={closed}
-                            onChange={(event) => form.setData('dietary_requirements', event.target.value)}
-                            className="min-h-24 w-full border border-champagne/60 bg-paper px-3 py-2"
-                        />
-                        <InputError message={form.errors.dietary_requirements} />
-                    </label>
                 </div>
             )}
 
@@ -176,7 +153,7 @@ export function RsvpForm({
             <button
                 type="submit"
                 disabled={closed || form.processing}
-                className="h-12 bg-sage px-8 text-sm tracking-[0.16em] text-paper uppercase disabled:opacity-50"
+                className="h-12 bg-sage px-8 text-sm tracking-[0.16em] text-ink uppercase disabled:opacity-50"
             >
                 {form.processing ? 'Saving…' : existing ? 'Update RSVP' : 'Submit RSVP'}
             </button>
@@ -187,7 +164,6 @@ export function RsvpForm({
 function normalizeGuests(existing: GuestRsvp | null, count: number): Guest[] {
     const guests = existing?.guests.map((guest) => ({
         name: guest.name,
-        dietary_requirement: guest.dietaryRequirement ?? '',
     })) ?? [];
 
     return resize(guests, count);
@@ -197,7 +173,7 @@ function resize(guests: Guest[], count: number): Guest[] {
     const next = guests.slice(0, count);
 
     while (next.length < count) {
-        next.push({ name: '', dietary_requirement: '' });
+        next.push({ name: '' });
     }
 
     return next;

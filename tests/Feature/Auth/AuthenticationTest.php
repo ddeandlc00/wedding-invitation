@@ -65,6 +65,29 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_remember_me_stores_a_remember_token(): void
+    {
+        $remembered = User::factory()->create(['remember_token' => null]);
+        $forgotten = User::factory()->create(['remember_token' => null]);
+
+        $this->post(route('login.store'), [
+            'email' => $remembered->email,
+            'password' => 'password',
+            'remember' => '1',
+        ])->assertRedirect(route('dashboard', absolute: false));
+
+        $this->assertNotNull($remembered->fresh()?->remember_token);
+
+        $this->post(route('logout'));
+
+        $this->post(route('login.store'), [
+            'email' => $forgotten->email,
+            'password' => 'password',
+        ])->assertRedirect(route('dashboard', absolute: false));
+
+        $this->assertNull($forgotten->fresh()?->remember_token);
+    }
+
     public function test_users_can_logout()
     {
         $user = User::factory()->create();

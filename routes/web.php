@@ -14,11 +14,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [PublicSiteController::class, 'home'])->name('home');
 Route::get('/our-story', [PublicSiteController::class, 'story'])->name('story');
 Route::get('/wedding-details', [PublicSiteController::class, 'details'])->name('details');
-Route::get('/itinerary', [PublicSiteController::class, 'details'])->name('itinerary');
-Route::get('/faq', [PublicSiteController::class, 'faq'])->name('faq');
-Route::get('/gallery', [PublicSiteController::class, 'gallery'])->name('gallery');
 Route::get('/contact', [PublicSiteController::class, 'contact'])->name('contact');
-Route::get('/registry', [PublicSiteController::class, 'registry'])->name('registry');
 
 Route::post('/invitation/access', [InvitationAccessController::class, 'store'])
     ->middleware('throttle:invitation-codes')
@@ -68,12 +64,6 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->group(functio
     Route::put('story/{storyMoment}', [ContentController::class, 'updateMoment'])->name('admin.story.update');
     Route::delete('story/{storyMoment}', [ContentController::class, 'destroyMoment'])->name('admin.story.destroy');
 
-    Route::post('faqs', [ContentController::class, 'storeFaq'])->name('admin.faqs.store');
-    Route::put('faqs/{faq}', [ContentController::class, 'updateFaq'])->name('admin.faqs.update');
-    Route::delete('faqs/{faq}', [ContentController::class, 'destroyFaq'])->name('admin.faqs.destroy');
-
-    Route::post('gallery', [ContentController::class, 'storeImage'])->name('admin.gallery.store');
-    Route::delete('gallery/{galleryImage}', [ContentController::class, 'destroyImage'])->name('admin.gallery.destroy');
 });
 
 require __DIR__.'/settings.php';

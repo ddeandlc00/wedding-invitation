@@ -48,14 +48,11 @@ class StoreInvitationRequest extends AdminFormRequest
             'invitee_name' => trim($this->string('invitee_name')->toString()),
             'contact_name' => $this->blank('contact_name'),
             'email' => $this->blank('email'),
-            'contact_information' => $this->blank('contact_information'),
             'max_pax' => $this->integer('max_pax'),
             'status' => $this->string('status')->toString(),
             'personal_message' => $this->blank('personal_message'),
-            'organizer_notes' => $this->blank('organizer_notes'),
             'rsvp_deadline' => app(InvitationService::class)->nullableDate($this->input('rsvp_deadline'), $timezone),
             'expires_at' => app(InvitationService::class)->nullableDate($this->input('expires_at'), $timezone),
-            'collect_guest_names' => $this->boolean('collect_guest_names'),
         ];
     }
 }

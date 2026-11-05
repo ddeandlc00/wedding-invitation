@@ -71,45 +71,45 @@
 }
 
 :root {
-    --wedding-ivory: #f6f1e8;
-    --wedding-paper: #fffdf9;
-    --wedding-ink: #2c2824;
-    --wedding-muted: #6f665d;
-    --wedding-champagne: #a68456;
-    --wedding-sage: #3f5344;
+    --wedding-ivory: #f2e8da;
+    --wedding-paper: #fbf6ef;
+    --wedding-ink: #3c4034;
+    --wedding-muted: #6a655c;
+    --wedding-champagne: #d6d4d8;
+    --wedding-sage: #afa1d8;
     --wedding-heading: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
     --wedding-body: 'Outfit', 'Instrument Sans', ui-sans-serif, sans-serif;
-    --background: oklch(0.975 0.01 85);
-    --foreground: oklch(0.28 0.02 70);
-    --card: oklch(0.99 0.005 85);
-    --card-foreground: oklch(0.28 0.02 70);
-    --popover: oklch(0.99 0.005 85);
-    --popover-foreground: oklch(0.28 0.02 70);
-    --primary: oklch(0.4 0.04 150);
-    --primary-foreground: oklch(0.98 0.01 85);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
+    --background: #f2e8da;
+    --foreground: #3c4034;
+    --card: #fbf6ef;
+    --card-foreground: #3c4034;
+    --popover: #fbf6ef;
+    --popover-foreground: #3c4034;
+    --primary: #afa1d8;
+    --primary-foreground: #3c4034;
+    --secondary: #e8d4df;
+    --secondary-foreground: #3c4034;
+    --muted: #e8d4df;
+    --muted-foreground: #6a655c;
+    --accent: #c8bee8;
+    --accent-foreground: #3c4034;
     --destructive: oklch(0.577 0.245 27.325);
     --destructive-foreground: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.87 0 0);
+    --border: #d6d4d8;
+    --input: #d6d4d8;
+    --ring: #afa1d8;
     --chart-1: oklch(0.646 0.222 41.116);
     --chart-2: oklch(0.6 0.118 184.704);
     --chart-3: oklch(0.398 0.07 227.392);
     --chart-4: oklch(0.828 0.189 84.429);
     --chart-5: oklch(0.769 0.188 70.08);
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar: #f2e8da;
+    --sidebar-foreground: #3c4034;
+    --sidebar-primary: #afa1d8;
+    --sidebar-primary-foreground: #3c4034;
+    --sidebar-accent: #e8d4df;
+    --sidebar-accent-foreground: #3c4034;
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.87 0 0);
 }
@@ -160,7 +160,9 @@
 }
 
 .wedding-site {
-    background: var(--wedding-ivory);
+    background:
+        radial-gradient(circle at top left, #e8d4df 0, transparent 28rem),
+        var(--wedding-ivory);
     color: var(--wedding-ink);
     font-family: var(--wedding-body), 'Outfit', sans-serif;
 }

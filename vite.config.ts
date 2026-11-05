@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import inertia from '@inertiajs/vite';
 import { wayfinder } from '@laravel/vite-plugin-wayfinder';
 import babel from '@rolldown/plugin-babel';
@@ -6,6 +7,16 @@ import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
 import { defineConfig, lazyPlugins } from 'vite-plus';
+
+function phpIsAvailable(): boolean {
+    try {
+        execSync('php -r "exit(0);"', { stdio: 'ignore' });
+
+        return true;
+    } catch {
+        return false;
+    }
+}
 
 export default defineConfig({
     plugins: lazyPlugins(() => [
@@ -30,9 +41,9 @@ export default defineConfig({
             presets: [reactCompilerPreset()],
         }),
         tailwindcss(),
-        wayfinder({
-            formVariants: true,
-        }),
+        // The asset build on Vercel and in the Docker Node stage has no PHP.
+        // Committed Wayfinder files are used there. Local builds still regenerate them.
+        ...(phpIsAvailable() ? [wayfinder({ formVariants: true })] : []),
     ]),
     server: {
         watch: {

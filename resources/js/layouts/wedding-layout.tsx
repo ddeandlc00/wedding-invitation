@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Florals } from '@/components/wedding/florals';
 import { SiteFooter, SiteHeader, useWedding } from '@/components/wedding/site-chrome';
 
 export default function WeddingLayout({ children }: { children: ReactNode }) {
@@ -17,11 +18,21 @@ export default function WeddingLayout({ children }: { children: ReactNode }) {
                 ['--wedding-sage' as string]: theme.sage,
                 ['--wedding-heading' as string]: theme.headingStack,
                 ['--wedding-body' as string]: theme.bodyStack,
+                ['--primary' as string]: theme.sage,
+                ['--primary-foreground' as string]: theme.ink,
+                ['--background' as string]: theme.ivory,
+                ['--foreground' as string]: theme.ink,
+                ['--card' as string]: theme.paper,
+                ['--border' as string]: theme.champagne,
+                ['--ring' as string]: theme.champagne,
             }}
         >
-            <SiteHeader />
-            <main>{children}</main>
-            <SiteFooter />
+            <Florals />
+            <div className="relative z-10">
+                <SiteHeader />
+                <main>{children}</main>
+                <SiteFooter />
+            </div>
         </div>
     );
 }

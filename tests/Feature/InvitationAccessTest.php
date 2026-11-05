@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Invitation;
 use App\Models\User;
+use Database\Seeders\WeddingContentSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
@@ -126,12 +127,30 @@ class InvitationAccessTest extends TestCase
         $this->get(route('home'))->assertOk()->assertDontSee('Unlisted Guest');
         $this->get(route('story'))->assertOk()->assertDontSee('Unlisted Guest');
         $this->get(route('details'))->assertOk();
-        $this->get(route('faq'))->assertOk();
-        $this->get(route('gallery'))->assertOk();
         $this->get(route('contact'))->assertOk();
-        $this->get(route('registry'))->assertOk();
+        $this->get('/gallery')->assertNotFound();
+        $this->get('/faq')->assertNotFound();
+        $this->get('/registry')->assertNotFound();
+        $this->get('/itinerary')->assertNotFound();
         $this->get('/invitations')->assertNotFound();
 
         $this->actingAs($admin)->get(route('dashboard'))->assertOk();
+    }
+
+    public function test_published_story_and_venue_are_public(): void
+    {
+        (new WeddingContentSeeder)->publishStoryAndVenue();
+
+        $this->get(route('story'))
+            ->assertOk()
+            ->assertSee('Where it began')
+            ->assertSee('2021')
+            ->assertSee('/images/story-2021.jpg', false);
+
+        $this->get(route('details'))
+            ->assertOk()
+            ->assertSee('Asaricha Tropical Beach Resort')
+            ->assertSee('https://maps.app.goo.gl/3W7faTPg12jmqoqD9', false)
+            ->assertSee('3:00 PM', false);
     }
 }

@@ -116,7 +116,7 @@ There is no guest account and no guest password.
 
 ## What is included
 
-- Landing page, story, schedule, questions, gallery, registry, and contact
+- Landing page, story, wedding details, and contact
 - Invitation-code entry and personal invitation pages
 - RSVP create and update, with pax limits, deadlines, and optional guest names
 - Organizer sign-in, dashboard, invitation management, RSVP management, and wedding settings
@@ -125,7 +125,6 @@ There is no guest account and no guest password.
 
 ## Limits
 
-- Story photographs are supported in the database and on the public story page. The settings screen edits story text; add gallery and hero photographs from Wedding Settings.
 - One current RSVP is stored per invitation.
 - The organizer’s manual RSVP is allowed after the guest deadline. Guests are not.
 - Charts count saved rows. They are empty until invitations exist.

@@ -19,12 +19,10 @@ type Settings = {
     parking: string;
     transportation: string;
     giftPreferences: string;
-    registryUrl: string;
     contactEmail: string;
     contactPhone: string;
     contactNote: string;
     postWeddingMessage: string;
-    heroUrl: string | null;
     theme: Record<string, string>;
     headingFonts: string[];
     bodyFonts: string[];
@@ -53,29 +51,14 @@ type Moment = {
     isSample: boolean;
 };
 
-type Faq = {
-    id: number;
-    question: string;
-    answer: string;
-    sortOrder: number;
-    isSample: boolean;
-    isPublished: boolean;
-};
-
-type GalleryImage = { id: number; url: string | null; altText: string; caption: string | null };
-
 export default function SettingsPage({
     settings,
     events,
     moments,
-    faqs,
-    gallery,
 }: {
     settings: Settings;
     events: EventRow[];
     moments: Moment[];
-    faqs: Faq[];
-    gallery: GalleryImage[];
 }) {
     const form = useForm({
         partner_one_name: settings.partnerOne,
@@ -92,13 +75,10 @@ export default function SettingsPage({
         parking_information: settings.parking,
         transportation_guidance: settings.transportation,
         gift_preferences: settings.giftPreferences,
-        registry_url: settings.registryUrl,
         contact_email: settings.contactEmail,
         contact_phone: settings.contactPhone,
         contact_note: settings.contactNote,
         post_wedding_message: settings.postWeddingMessage,
-        remove_hero: false,
-        hero_image: null as File | null,
         theme: settings.theme,
     });
 
@@ -110,7 +90,7 @@ export default function SettingsPage({
                     className="space-y-4"
                     onSubmit={(event) => {
                         event.preventDefault();
-                        form.put('/admin/settings', { forceFormData: true, preserveScroll: true });
+                        form.put('/admin/settings', { preserveScroll: true });
                     }}
                 >
                     <h1 className="font-serif text-3xl">Wedding settings</h1>
@@ -138,7 +118,6 @@ export default function SettingsPage({
                     <Area label="Parking" value={form.data.parking_information} onChange={(value) => form.setData('parking_information', value)} />
                     <Area label="Transportation" value={form.data.transportation_guidance} onChange={(value) => form.setData('transportation_guidance', value)} />
                     <Area label="Gift note" value={form.data.gift_preferences} onChange={(value) => form.setData('gift_preferences', value)} />
-                    <Text label="Registry URL" value={form.data.registry_url} onChange={(value) => form.setData('registry_url', value)} error={form.errors.registry_url} />
                     <div className="grid gap-3 sm:grid-cols-2">
                         <Text label="Contact email" value={form.data.contact_email} onChange={(value) => form.setData('contact_email', value)} error={form.errors.contact_email} />
                         <Text label="Contact phone" value={form.data.contact_phone} onChange={(value) => form.setData('contact_phone', value)} error={form.errors.contact_phone} />
@@ -146,9 +125,16 @@ export default function SettingsPage({
                     <Area label="Contact note" value={form.data.contact_note} onChange={(value) => form.setData('contact_note', value)} />
                     <Area label="Message after the wedding" value={form.data.post_wedding_message} onChange={(value) => form.setData('post_wedding_message', value)} error={form.errors.post_wedding_message} />
                     <div className="grid gap-3 sm:grid-cols-3">
-                        {(['ivory', 'paper', 'ink', 'muted', 'champagne', 'sage'] as const).map((key) => (
-                            <label key={key} className="text-sm capitalize">
-                                {key}
+                        {([
+                            ['ivory', 'Champagne'],
+                            ['paper', 'Cream'],
+                            ['ink', 'Ink'],
+                            ['muted', 'Stone'],
+                            ['champagne', 'Mist'],
+                            ['sage', 'Lavender'],
+                        ] as const).map(([key, label]) => (
+                            <label key={key} className="text-sm">
+                                {label}
                                 <input type="color" className="mt-1 h-10 w-full" value={form.data.theme[key]} onChange={(event) => form.setData('theme', { ...form.data.theme, [key]: event.target.value })} />
                             </label>
                         ))}
@@ -168,13 +154,6 @@ export default function SettingsPage({
                             </select>
                         </label>
                     </div>
-                    {settings.heroUrl && <img src={settings.heroUrl} alt="Current hero photograph" className="max-h-48" />}
-                    <label className="text-sm">
-                        Hero photograph
-                        <input type="file" accept="image/jpeg,image/png,image/webp" className="mt-1 block" onChange={(event) => form.setData('hero_image', event.target.files?.[0] ?? null)} />
-                        <InputError message={form.errors.hero_image} />
-                    </label>
-                    <label className="flex gap-2 text-sm"><input type="checkbox" checked={form.data.remove_hero} onChange={(event) => form.setData('remove_hero', event.target.checked)} /> Remove hero photograph</label>
                     <Button type="submit" disabled={form.processing}>{form.processing ? 'Saving…' : 'Save settings'}</Button>
                 </form>
 
@@ -213,25 +192,6 @@ export default function SettingsPage({
                     <MiniForm action="/admin/story" method="post" fields={{ title: '', occurred_label: '', body: '', caption: '', sort_order: '0' }} />
                 </ContentSection>
 
-                <ContentSection title="Questions">
-                    {faqs.map((faq) => (
-                        <MiniForm key={faq.id} action={`/admin/faqs/${faq.id}`} method="put" fields={{ question: faq.question, answer: faq.answer, sort_order: String(faq.sortOrder) }} onDelete={() => router.delete(`/admin/faqs/${faq.id}`, { preserveScroll: true })} />
-                    ))}
-                    <MiniForm action="/admin/faqs" method="post" fields={{ question: '', answer: '', sort_order: '0' }} />
-                </ContentSection>
-
-                <ContentSection title="Gallery">
-                    <ul className="grid gap-3 sm:grid-cols-2">
-                        {gallery.map((image) => (
-                            <li key={image.id} className="rounded-xl border p-3 text-sm">
-                                {image.url && <img src={image.url} alt={image.altText} className="mb-2 max-h-40 w-full object-cover" />}
-                                <p>{image.altText}</p>
-                                <button type="button" className="mt-2 underline" onClick={() => router.delete(`/admin/gallery/${image.id}`, { preserveScroll: true })}>Remove</button>
-                            </li>
-                        ))}
-                    </ul>
-                    <GalleryUpload />
-                </ContentSection>
             </div>
         </>
     );
@@ -305,26 +265,6 @@ function MiniForm({
                 <Button type="submit" size="sm" disabled={form.processing}>Save</Button>
                 {onDelete && <Button type="button" size="sm" variant="outline" onClick={onDelete}>Remove</Button>}
             </div>
-        </form>
-    );
-}
-
-function GalleryUpload() {
-    const form = useForm({ image: null as File | null, alt_text: '', caption: '', sort_order: '0' });
-
-    return (
-        <form
-            className="grid gap-2 rounded-xl border p-3"
-            onSubmit={(event) => {
-                event.preventDefault();
-                form.post('/admin/gallery', { forceFormData: true, preserveScroll: true, onSuccess: () => form.reset() });
-            }}
-        >
-            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => form.setData('image', event.target.files?.[0] ?? null)} />
-            <input className="h-9 rounded-md border px-2" placeholder="Alternative text" value={form.data.alt_text} onChange={(event) => form.setData('alt_text', event.target.value)} />
-            <input className="h-9 rounded-md border px-2" placeholder="Caption" value={form.data.caption} onChange={(event) => form.setData('caption', event.target.value)} />
-            <InputError message={form.errors.image || form.errors.alt_text} />
-            <Button type="submit" size="sm" disabled={form.processing}>Add photograph</Button>
         </form>
     );
 }

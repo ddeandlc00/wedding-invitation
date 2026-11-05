@@ -53,7 +53,7 @@ export default function Invitation({
                                 {event.venueName && <p className="mt-3">{event.venueName}</p>}
                                 {event.address && <p className="text-sm text-taupe">{event.address}</p>}
                                 {event.mapUrl && (
-                                    <a className="mt-3 inline-block text-sm text-sage underline" href={event.mapUrl}>
+                                    <a className="mt-3 inline-block text-sm text-ink underline" href={event.mapUrl}>
                                         Directions
                                     </a>
                                 )}

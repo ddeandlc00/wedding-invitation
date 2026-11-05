@@ -1,5 +1,8 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { useWedding } from '@/components/wedding/site-chrome';
+import { Button } from '@/components/ui/button';
+import { useClipboard } from '@/hooks/use-clipboard';
 import type { AdminInvitation, Paginator } from '@/types/wedding';
 
 type Filters = {
@@ -18,6 +21,8 @@ export default function InvitationsIndex({
     filters: Filters;
 }) {
     const [search, setSearch] = useState(filters.search);
+    const wedding = useWedding();
+    const [copied, copy] = useClipboard();
 
     function apply(next: Partial<Filters>) {
         router.get('/admin/invitations', { ...filters, search, ...next }, { preserveState: true, replace: true });
@@ -91,7 +96,7 @@ export default function InvitationsIndex({
                                     <th className="p-3 font-medium">Pax</th>
                                     <th className="p-3 font-medium">Status</th>
                                     <th className="p-3 font-medium">RSVP</th>
-                                    <th className="p-3 font-medium">Code</th>
+                                    <th className="p-3 font-medium">Invite</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -103,7 +108,17 @@ export default function InvitationsIndex({
                                         <td className="p-3">{invitation.maxPax}</td>
                                         <td className="p-3">{invitation.statusLabel}</td>
                                         <td className="p-3">{invitation.statusSummary}</td>
-                                        <td className="p-3 font-mono text-xs">{invitation.code ?? 'Unavailable'}</td>
+                                        <td className="p-3">
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                variant="outline"
+                                                disabled={!invitation.code}
+                                                onClick={() => void copy(inviteMessage(wedding.couple, invitation.code ?? '', invitation.url))}
+                                            >
+                                                {copied === inviteMessage(wedding.couple, invitation.code ?? '', invitation.url) ? 'Copied' : 'Copy invite'}
+                                            </Button>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -120,6 +135,21 @@ export default function InvitationsIndex({
             </div>
         </>
     );
+}
+
+function inviteMessage(couple: string, code: string, url: string | null): string {
+    const lines = [
+        `You're invited to celebrate with ${couple}.`,
+        '',
+        'Use this invitation code to open your personal invitation and send your RSVP:',
+        code,
+    ];
+
+    if (url) {
+        lines.push('', url);
+    }
+
+    return lines.join('\n');
 }
 
 InvitationsIndex.layout = {

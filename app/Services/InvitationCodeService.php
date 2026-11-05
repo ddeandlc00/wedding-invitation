@@ -13,10 +13,10 @@ class InvitationCodeService
     public function generatePlainCode(): string
     {
         $characters = '';
-        $bytes = random_bytes(24);
+        $bytes = random_bytes(8);
         $alphabetLength = strlen(self::ALPHABET);
 
-        for ($index = 0; $index < 24; $index++) {
+        for ($index = 0; $index < 8; $index++) {
             $characters .= self::ALPHABET[ord($bytes[$index]) % $alphabetLength];
         }
 
@@ -44,7 +44,7 @@ class InvitationCodeService
     {
         $normalized = $this->normalize($code);
 
-        if (strlen($normalized) < 16 || strlen($normalized) > 64) {
+        if (strlen($normalized) < 8 || strlen($normalized) > 64) {
             return null;
         }
 

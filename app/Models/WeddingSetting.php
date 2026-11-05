@@ -79,12 +79,12 @@ class WeddingSetting extends Model
     public static function defaultTheme(): array
     {
         return [
-            'ivory' => '#f6f1e8',
-            'paper' => '#fffdf9',
-            'ink' => '#2c2824',
-            'muted' => '#6f665d',
-            'champagne' => '#a68456',
-            'sage' => '#3f5344',
+            'ivory' => '#f2e8da',
+            'paper' => '#fbf6ef',
+            'ink' => '#3c4034',
+            'muted' => '#6a655c',
+            'champagne' => '#d6d4d8',
+            'sage' => '#afa1d8',
             'heading_font' => 'Cormorant Garamond',
             'body_font' => 'Outfit',
         ];
@@ -99,7 +99,7 @@ class WeddingSetting extends Model
             'partner_one_name' => '',
             'partner_two_name' => '',
             'wedding_at' => null,
-            'timezone' => 'UTC',
+            'timezone' => 'Asia/Manila',
             'welcome_message' => 'We are so glad you are here. Use your invitation code to open your personal invitation and send your RSVP.',
             'invitation_message' => 'We are delighted to invite you to celebrate our wedding. It would mean so much to us to have you join us as we begin this beautiful new chapter of our lives.',
             'rsvp_deadline' => null,

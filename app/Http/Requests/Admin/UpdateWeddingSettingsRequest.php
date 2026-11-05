@@ -7,13 +7,6 @@ use Illuminate\Validation\Validator;
 
 class UpdateWeddingSettingsRequest extends AdminFormRequest
 {
-    protected function prepareForValidation(): void
-    {
-        if (! $this->hasFile('hero_image')) {
-            $this->merge(['hero_image' => null]);
-        }
-    }
-
     /**
      * @return array<string, mixed>
      */
@@ -39,8 +32,6 @@ class UpdateWeddingSettingsRequest extends AdminFormRequest
             'contact_phone' => ['nullable', 'regex:/^[0-9+\-\s().]{3,40}$/'],
             'contact_note' => ['nullable', 'string', 'max:2000'],
             'post_wedding_message' => ['required', 'string', 'max:500'],
-            'hero_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
-            'remove_hero' => ['sometimes', 'boolean'],
             'theme.ivory' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'theme.paper' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'theme.ink' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],

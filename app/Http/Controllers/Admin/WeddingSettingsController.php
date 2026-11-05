@@ -8,7 +8,6 @@ use App\Models\Invitation;
 use App\Models\WeddingSetting;
 use App\Services\InvitationService;
 use App\Services\WeddingPresenter;
-use App\Support\PublicMedia;
 use App\Support\WeddingClock;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -24,8 +23,6 @@ class WeddingSettingsController extends Controller
             'settings' => $presenter->settingsForm(),
             'events' => $presenter->adminEvents(),
             'moments' => $presenter->adminMoments(),
-            'faqs' => $presenter->adminFaqs(),
-            'gallery' => $presenter->adminGallery(),
         ]);
     }
 
@@ -51,36 +48,21 @@ class WeddingSettingsController extends Controller
             'parking_information' => $this->blank($request->string('parking_information')->toString()),
             'transportation_guidance' => $this->blank($request->string('transportation_guidance')->toString()),
             'gift_preferences' => $this->blank($request->string('gift_preferences')->toString()),
-            'registry_url' => $this->blank($request->string('registry_url')->toString()),
             'contact_email' => $this->blank($request->string('contact_email')->toString()),
             'contact_phone' => $this->blank($request->string('contact_phone')->toString()),
             'contact_note' => $this->blank($request->string('contact_note')->toString()),
             'post_wedding_message' => $request->string('post_wedding_message')->toString(),
             'theme' => [
-                'ivory' => WeddingSetting::hexColor($theme['ivory'] ?? null, '#f6f1e8'),
-                'paper' => WeddingSetting::hexColor($theme['paper'] ?? null, '#fffdf9'),
-                'ink' => WeddingSetting::hexColor($theme['ink'] ?? null, '#2c2824'),
-                'muted' => WeddingSetting::hexColor($theme['muted'] ?? null, '#6f665d'),
-                'champagne' => WeddingSetting::hexColor($theme['champagne'] ?? null, '#a68456'),
-                'sage' => WeddingSetting::hexColor($theme['sage'] ?? null, '#3f5344'),
+                'ivory' => WeddingSetting::hexColor($theme['ivory'] ?? null, '#f2e8da'),
+                'paper' => WeddingSetting::hexColor($theme['paper'] ?? null, '#fbf6ef'),
+                'ink' => WeddingSetting::hexColor($theme['ink'] ?? null, '#3c4034'),
+                'muted' => WeddingSetting::hexColor($theme['muted'] ?? null, '#6a655c'),
+                'champagne' => WeddingSetting::hexColor($theme['champagne'] ?? null, '#d6d4d8'),
+                'sage' => WeddingSetting::hexColor($theme['sage'] ?? null, '#afa1d8'),
                 'heading_font' => WeddingSetting::allowedFont('heading_font', (string) ($theme['heading_font'] ?? '')),
                 'body_font' => WeddingSetting::allowedFont('body_font', (string) ($theme['body_font'] ?? '')),
             ],
         ];
-
-        if ($request->boolean('remove_hero')) {
-            PublicMedia::delete($settings->hero_image_path);
-            $payload['hero_image_path'] = null;
-        }
-
-        if ($request->hasFile('hero_image')) {
-            PublicMedia::delete($settings->hero_image_path);
-            $file = $request->file('hero_image');
-
-            if ($file !== null) {
-                $payload['hero_image_path'] = PublicMedia::store($file, 'wedding/hero');
-            }
-        }
 
         $settings->update($payload);
 

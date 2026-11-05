@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\AuditLog;
 use App\Models\Invitation;
 use App\Models\User;
+use App\Models\WeddingEvent;
 use App\Services\InvitationCodeService;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -31,6 +32,7 @@ class InvitationManagementTest extends TestCase
 
         $plain = $invitation->plainCode();
         $this->assertNotNull($plain);
+        $this->assertMatchesRegularExpression('/^[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$/', $plain);
         $this->assertNotSame($plain, $invitation->code_lookup);
         $this->assertSame(app(InvitationCodeService::class)->hash($plain), $invitation->code_lookup);
         $this->assertDatabaseHas('audit_logs', ['action' => 'invitation.created']);
@@ -95,5 +97,22 @@ class InvitationManagementTest extends TestCase
         $this->actingAs($guest)->get(route('admin.invitations.index'))->assertForbidden();
         $this->actingAs($guest)->get(route('admin.invitations.show', $invitation))->assertForbidden();
         $this->assertSame(0, AuditLog::query()->count());
+    }
+
+    public function test_event_changes_return_to_wedding_settings(): void
+    {
+        $admin = User::factory()->create();
+        $event = WeddingEvent::query()->create([
+            'name' => 'Ceremony',
+            'sort_order' => 1,
+        ]);
+
+        $this->actingAs($admin)->put(route('admin.events.update', $event), [
+            'name' => 'Evening ceremony',
+        ])->assertRedirect(route('admin.settings.edit'));
+
+        $this->actingAs($admin)
+            ->delete(route('admin.events.destroy', $event))
+            ->assertRedirect(route('admin.settings.edit'));
     }
 }

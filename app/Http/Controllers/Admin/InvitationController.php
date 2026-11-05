@@ -110,7 +110,7 @@ class InvitationController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Invitation status updated.']);
 
-        return back();
+        return to_route('admin.invitations.show', $invitation);
     }
 
     public function regenerate(Request $request, Invitation $invitation, InvitationService $service): RedirectResponse
@@ -128,13 +128,13 @@ class InvitationController extends Controller
         $this->authorize('update', $invitation);
 
         if (! $this->mailIsConfigured()) {
-            return back()->withErrors([
+            return to_route('admin.invitations.show', $invitation)->withErrors([
                 'email' => 'Email delivery is not configured. Copy the invitation link and share it manually.',
             ]);
         }
 
         if ($invitation->email === null || $invitation->plainCode() === null || $invitation->shareUrl() === null) {
-            return back()->withErrors([
+            return to_route('admin.invitations.show', $invitation)->withErrors([
                 'email' => 'Add an email address and a working invitation code before sending.',
             ]);
         }
@@ -150,7 +150,7 @@ class InvitationController extends Controller
             report($exception);
             $audit->log('invitation.email_failed', $invitation, ['invitation_id' => $invitation->id], $this->admin($request), $request);
 
-            return back()->withErrors([
+            return to_route('admin.invitations.show', $invitation)->withErrors([
                 'email' => 'The invitation email could not be sent. Copy the link and share it manually.',
             ]);
         }
@@ -158,7 +158,7 @@ class InvitationController extends Controller
         $audit->log('invitation.email_submitted', $invitation, ['invitation_id' => $invitation->id], $this->admin($request), $request);
         Inertia::flash('toast', ['type' => 'success', 'message' => 'The invitation email was submitted to the mail provider.']);
 
-        return back();
+        return to_route('admin.invitations.show', $invitation);
     }
 
     public function preview(Request $request, Invitation $invitation, InvitationAccess $access): RedirectResponse
@@ -166,7 +166,7 @@ class InvitationController extends Controller
         $this->authorize('view', $invitation);
 
         if ($invitation->status !== InvitationStatus::Active || $invitation->expires_at?->isPast()) {
-            return back()->withErrors([
+            return to_route('admin.invitations.show', $invitation)->withErrors([
                 'preview' => 'Activate the invitation before previewing the guest page.',
             ]);
         }

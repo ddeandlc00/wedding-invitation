@@ -1,6 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { Monogram } from '@/components/wedding/monogram';
+import { MusicToggle } from '@/components/wedding/music-toggle';
 import type { WeddingShared } from '@/types/wedding';
 
 export function useWedding(): WeddingShared {
@@ -9,64 +9,43 @@ export function useWedding(): WeddingShared {
 
 export function SiteHeader() {
     const wedding = useWedding();
-    const [open, setOpen] = useState(false);
     const current = usePage().url;
+    const links = [{ label: 'Home', href: '/' }, ...wedding.navigation];
 
     return (
-        <header className="border-b border-champagne/40">
-            <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-5">
-                <Link href="/" className="group flex items-center gap-3">
-                    <span className="flex size-11 items-center justify-center rounded-full border border-champagne/70 text-sm tracking-[0.2em] text-sage">
-                        {wedding.monogram}
-                    </span>
-                    <span>
-                        <span className="wedding-display block text-xl leading-none text-ink">
+        <header className="sticky top-0 z-30 border-b border-champagne/50 bg-ivory/80 backdrop-blur">
+            <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-4">
+                <Link href="/" className="flex min-w-0 items-center gap-3">
+                    <Monogram className="h-12 w-12 shrink-0 sm:h-14 sm:w-14" />
+                    <span className="min-w-0">
+                        <span className="wedding-display block truncate text-lg leading-none text-ink sm:text-xl">
                             {wedding.couple}
                         </span>
-                        <span className="mt-1 block text-xs tracking-[0.18em] text-taupe uppercase">
+                        <span className="mt-1 hidden text-xs tracking-[0.18em] text-taupe uppercase sm:block">
                             {wedding.dateLabel ?? 'Wedding celebration'}
                         </span>
                     </span>
                 </Link>
-                <nav className="hidden items-center gap-6 lg:flex" aria-label="Wedding pages">
-                    {wedding.navigation.map((item) => (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            className={`text-sm tracking-wide ${current.startsWith(item.href) ? 'text-sage' : 'text-taupe hover:text-ink'}`}
-                        >
-                            {item.label}
-                        </Link>
-                    ))}
-                </nav>
-                <button
-                    type="button"
-                    className="inline-flex size-11 items-center justify-center rounded-full border border-champagne/70 lg:hidden"
-                    aria-expanded={open}
-                    aria-controls="wedding-menu"
-                    onClick={() => setOpen((value) => !value)}
+                <nav
+                    className="flex max-w-[16rem] flex-wrap items-center justify-end gap-1 rounded-full border border-champagne bg-paper px-1.5 py-1 sm:max-w-none"
+                    aria-label="Wedding pages"
                 >
-                    <span className="sr-only">{open ? 'Close menu' : 'Open menu'}</span>
-                    {open ? <X className="size-5" /> : <Menu className="size-5" />}
-                </button>
-            </div>
-            {open && (
-                <nav id="wedding-menu" className="border-t border-champagne/30 px-5 py-4 lg:hidden" aria-label="Wedding pages">
-                    <ul className="space-y-1">
-                        {wedding.navigation.map((item) => (
-                            <li key={item.href}>
-                                <Link
-                                    href={item.href}
-                                    className="block rounded-md px-2 py-3 text-lg"
-                                    onClick={() => setOpen(false)}
-                                >
-                                    {item.label}
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
+                    {links.map((item) => {
+                        const active = item.href === '/' ? current === '/' || current.startsWith('/?') : current.startsWith(item.href);
+
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={`rounded-full px-2.5 py-1.5 text-xs tracking-wide sm:px-3 sm:text-sm ${active ? 'bg-[#e8d4df] text-ink' : 'text-taupe hover:text-ink'}`}
+                            >
+                                {item.label}
+                            </Link>
+                        );
+                    })}
+                    <MusicToggle />
                 </nav>
-            )}
+            </div>
         </header>
     );
 }
@@ -78,6 +57,7 @@ export function SiteFooter() {
         <footer className="border-t border-champagne/40">
             <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 md:grid-cols-3">
                 <div>
+                    <Monogram className="mb-3 h-20 w-20" />
                     <p className="wedding-display text-3xl">{wedding.couple}</p>
                     <p className="mt-2 text-sm text-taupe">
                         {wedding.dateLabel ?? 'The date will be announced here.'}
@@ -89,7 +69,7 @@ export function SiteFooter() {
                     <ul className="mt-3 space-y-2 text-sm">
                         {wedding.navigation.slice(0, 4).map((item) => (
                             <li key={item.href}>
-                                <Link href={item.href} className="hover:text-sage">
+                                <Link href={item.href} className="hover:text-ink">
                                     {item.label}
                                 </Link>
                             </li>

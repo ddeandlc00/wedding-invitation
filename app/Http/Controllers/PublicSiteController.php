@@ -28,28 +28,8 @@ class PublicSiteController extends Controller
         return Inertia::render('public/details', $presenter->details());
     }
 
-    public function faq(WeddingPresenter $presenter): Response
-    {
-        return Inertia::render('public/faq', $presenter->faqs());
-    }
-
-    public function gallery(WeddingPresenter $presenter): Response
-    {
-        return Inertia::render('public/gallery', $presenter->gallery());
-    }
-
     public function contact(WeddingPresenter $presenter): Response
     {
         return Inertia::render('public/contact', $presenter->contact());
-    }
-
-    public function registry(WeddingPresenter $presenter): Response
-    {
-        $details = $presenter->details();
-
-        return Inertia::render('public/registry', [
-            'giftPreferences' => $details['giftPreferences'],
-            'registryUrl' => $details['registryUrl'],
-        ]);
     }
 }

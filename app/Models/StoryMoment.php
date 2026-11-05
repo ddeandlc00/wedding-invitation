@@ -43,15 +43,53 @@ class StoryMoment extends Model
      */
     public function toPublicArray(): array
     {
+        $imageUrls = $this->imageUrls();
+
         return [
             'id' => $this->id,
             'title' => $this->title,
             'occurredLabel' => $this->occurred_label,
             'body' => $this->body,
-            'imageUrl' => PublicMedia::url($this->image_path),
+            'imageUrl' => $imageUrls[0] ?? null,
+            'imageUrls' => $imageUrls,
             'caption' => $this->caption,
             'isSample' => $this->is_sample,
             'sortOrder' => $this->sort_order,
         ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function imageUrls(): array
+    {
+        if ($this->image_path === null || trim($this->image_path) === '') {
+            return [];
+        }
+
+        $urls = [];
+
+        foreach (explode('|', $this->image_path) as $path) {
+            $url = $this->imageUrl(trim($path));
+
+            if ($url !== null) {
+                $urls[] = $url;
+            }
+        }
+
+        return $urls;
+    }
+
+    private function imageUrl(string $path): ?string
+    {
+        if ($path === '' || str_contains($path, '..')) {
+            return null;
+        }
+
+        if (str_starts_with($path, 'images/')) {
+            return '/'.$path;
+        }
+
+        return PublicMedia::url($path);
     }
 }
