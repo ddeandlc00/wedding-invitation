@@ -25,7 +25,7 @@ $decodedKey = str_starts_with($appKey, 'base64:')
 $validAppKey = strlen($appKey) === 32 || (is_string($decodedKey) && strlen($decodedKey) === 32);
 
 if (! $validAppKey) {
-    fwrite(STDERR, "APP_KEY is missing or invalid.\n");
+    error_log('APP_KEY is missing or invalid.');
     http_response_code(500);
     header('Content-Type: text/plain; charset=UTF-8');
     echo "APP_KEY is missing or invalid. Set it in the Vercel project environment to the output of: php artisan key:generate --show\n";
