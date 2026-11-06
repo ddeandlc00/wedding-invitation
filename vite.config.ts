@@ -41,8 +41,9 @@ export default defineConfig({
             presets: [reactCompilerPreset()],
         }),
         tailwindcss(),
-        // The asset build on Vercel and in the Docker Node stage has no PHP.
-        // Committed Wayfinder files are used there. Local builds still regenerate them.
+        // Cloudflare, Vercel, and the Docker Node stage have no PHP during the
+        // asset build. Committed Wayfinder files are used there. Local builds
+        // still regenerate them.
         ...(phpIsAvailable() ? [wayfinder({ formVariants: true })] : []),
     ]),
     server: {
