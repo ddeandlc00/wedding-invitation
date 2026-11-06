@@ -198,7 +198,6 @@ const rememberDatabaseId = () => {
                 name: workerName,
                 main: 'src/worker.mjs',
                 compatibility_date: '2026-11-04',
-                limits: { cpu_ms: 30000 },
                 observability: { enabled: true },
                 assets: {
                     directory: './assets',
