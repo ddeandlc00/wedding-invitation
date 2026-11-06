@@ -20,8 +20,15 @@ const workerName = 'stephen-raenah-wedding';
 const databaseName = 'stephen-raenah-wedding';
 const staging = join(root, '.workersphp');
 const shell = process.platform === 'win32';
+const ciOnly = process.argv.includes('--ci');
+const skipVite = process.argv.includes('--skip-vite');
 let hotFile = null;
 let packed = false;
+
+// Cloudflare runs `npm run build` before `npx wrangler deploy`. Local builds stay Vite-only.
+if (ciOnly && process.env.WORKERS_CI !== '1') {
+    process.exit(0);
+}
 
 const run = (command, args, options = {}) => {
     const result = spawnSync(command, args, {
@@ -47,25 +54,29 @@ const capture = (command, args, options = {}) =>
 const hasCommand = (command) => capture(command, ['--version']).status === 0;
 
 const ensureBuildTools = () => {
-    if (!hasCommand('php')) {
-        throw new Error('PHP is required to pack the Laravel app for Cloudflare.');
+    const missing = ['php', 'composer', 'zip'].filter((command) => !hasCommand(command));
+
+    if (missing.length > 0) {
+        if (process.platform === 'win32') {
+            throw new Error(`Install ${missing.join(', ')} before packing the app for Cloudflare.`);
+        }
+
+        console.error(`Installing ${missing.join(', ')}...`);
+        run('apt-get', ['update'], {
+            env: { ...process.env, DEBIAN_FRONTEND: 'noninteractive' },
+        });
+        run(
+            'apt-get',
+            ['install', '-y', 'php-cli', 'php-mbstring', 'php-xml', 'php-curl', 'php-sqlite3', 'unzip', 'zip', 'composer'],
+            { env: { ...process.env, DEBIAN_FRONTEND: 'noninteractive' } },
+        );
     }
 
-    if (!hasCommand('composer')) {
-        throw new Error('Composer is required to pack the Laravel app for Cloudflare.');
-    }
+    const sqlite = capture('php', ['-r', 'exit(extension_loaded("pdo_sqlite") ? 0 : 1);']);
 
-    if (hasCommand('zip')) {
-        return;
+    if (sqlite.status !== 0) {
+        throw new Error('PHP is installed without pdo_sqlite, which the D1 schema build needs.');
     }
-
-    if (process.platform === 'win32') {
-        throw new Error('The zip command is required. On Cloudflare’s Linux build image it can be installed with apt-get.');
-    }
-
-    console.error('Installing zip...');
-    run('apt-get', ['update']);
-    run('apt-get', ['install', '-y', 'zip']);
 };
 
 const appKey = () => {
@@ -305,7 +316,10 @@ try {
         writeFileSync(join(root, '.env'), envFile);
     }
 
-    run('npx', ['vp', 'build']);
+    if (!skipVite) {
+        run('npx', ['vp', 'build']);
+    }
+
     rmSync(staging, { recursive: true, force: true });
     uploadAppKey(appKey());
     packed = true;

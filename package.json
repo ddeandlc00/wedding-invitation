@@ -3,7 +3,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vp build",
+        "build": "vp build && node scripts/cloudflare-prepare.mjs --ci --skip-vite",
         "cf:prepare": "node scripts/cloudflare-prepare.mjs",
         "deploy": "node scripts/cloudflare-prepare.mjs && wrangler deploy",
         "preview": "node scripts/cloudflare-prepare.mjs && wrangler dev",
