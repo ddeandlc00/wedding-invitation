@@ -26,6 +26,10 @@ const laravel = createLaravelWorker({
         'cache.limiter': 'do',
     }),
     cacheHubBinding: 'CACHE_HUB',
+    ini: `
+        opcache.max_accelerated_files=4096
+        memory_limit=96M
+    `,
 });
 
 export default {

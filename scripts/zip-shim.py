@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Info-ZIP-compatible packer for the Workers PHP build image, which has no zip binary."""
 
+import base64
 import os
 import re
+import subprocess
 import sys
 import zipfile
 
@@ -78,6 +80,81 @@ def files_under(source, patterns):
             yield os.path.join(directory, filename)
 
 
+def rewrite_runtime_paths(app_dir):
+    needle = os.path.abspath(app_dir)
+    targets = [
+        os.path.join(app_dir, 'bootstrap', 'cache'),
+        os.path.join(app_dir, 'storage', 'framework', 'views'),
+    ]
+
+    for directory in targets:
+        if not os.path.isdir(directory):
+            continue
+
+        for current, _dirs, filenames in os.walk(directory):
+            for filename in filenames:
+                if not filename.endswith('.php'):
+                    continue
+
+                path = os.path.join(current, filename)
+                file = open(path, 'r', encoding='utf-8', errors='surrogateescape')
+                text = file.read()
+                file.close()
+                updated = text.replace(needle, '/app')
+
+                if updated != text:
+                    file = open(path, 'w', encoding='utf-8', errors='surrogateescape')
+                    file.write(updated)
+                    file.close()
+
+
+def bake_artifacts(app_dir):
+    """Compile views and config before the archive is built.
+
+    The Worker otherwise compiles every Blade file during boot and overflows
+    the WebAssembly memory. A cached config file tells the runtime to skip that.
+    """
+
+    if not os.path.isfile(os.path.join(app_dir, 'vendor', 'autoload.php')):
+        return
+
+    if os.path.isfile(os.path.join(app_dir, 'bootstrap', 'cache', 'config.php')):
+        return
+
+    env = os.environ.copy()
+    app_key = env.get('APP_KEY', '')
+
+    if not app_key.startswith('base64:'):
+        app_key = 'base64:' + base64.b64encode(os.urandom(32)).decode('ascii')
+
+    database = os.path.join('/tmp', 'wedding-bake.sqlite')
+    open(database, 'ab').close()
+    env.update({
+        'APP_ENV': 'production',
+        'APP_DEBUG': 'false',
+        'APP_KEY': app_key,
+        'DB_CONNECTION': 'sqlite',
+        'DB_DATABASE': database,
+        'SESSION_DRIVER': 'cookie',
+        'CACHE_STORE': 'array',
+        'QUEUE_CONNECTION': 'sync',
+        'LOG_CHANNEL': 'stderr',
+        'BROADCAST_CONNECTION': 'log',
+    })
+
+    for command in (
+        ['php', 'artisan', 'view:cache', '--no-interaction'],
+        ['php', 'artisan', 'config:cache', '--no-interaction'],
+    ):
+        completed = subprocess.run(command, cwd=app_dir, env=env)
+
+        if completed.returncode != 0:
+            print('zip-shim: ' + ' '.join(command) + ' failed', file=sys.stderr)
+
+    if os.path.isfile(os.path.join(app_dir, 'bootstrap', 'cache', 'config.php')):
+        rewrite_runtime_paths(app_dir)
+
+
 def main(argv):
     if '--version' in argv or '-v' in argv:
         print('zip-shim 1.1')
@@ -107,7 +184,11 @@ def main(argv):
 
     archive = positionals[0]
     sources = positionals[1:] or ['.']
-    mode = 'a' if os.path.exists(archive) else 'w'
+    creating = not os.path.exists(archive)
+    mode = 'a' if not creating else 'w'
+
+    if creating and os.path.isfile('artisan'):
+        bake_artifacts(os.getcwd())
     output = archive_name(os.path.abspath(archive))
 
     with zipfile.ZipFile(archive, mode, compression=zipfile.ZIP_DEFLATED, allowZip64=False) as bundle:

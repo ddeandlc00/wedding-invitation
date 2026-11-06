@@ -19,7 +19,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // The Cloudflare runtime reads this binding. A cached config disables env(),
+        // so the name is fixed here instead of being read from the environment.
+        if (config('database.connections.cfd1.database') === null) {
+            config([
+                'database.connections.cfd1.driver' => 'cfd1',
+                'database.connections.cfd1.database' => 'DB',
+                'database.connections.cfd1.prefix' => '',
+            ]);
+        }
     }
 
     /**
