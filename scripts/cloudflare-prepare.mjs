@@ -134,12 +134,32 @@ const rememberDatabaseId = () => {
         throw new Error('Cloudflare did not return a D1 database id.');
     }
 
-    const configPath = join(root, 'wrangler.jsonc');
-    const config = readFileSync(configPath, 'utf8').replace(
-        /"database_id":\s*"[^"]*"/,
-        `"database_id": "${databaseId}"`,
+    writeFileSync(
+        join(root, 'wrangler.jsonc'),
+        JSON.stringify(
+            {
+                $schema: './node_modules/wrangler/config-schema.json',
+                name: workerName,
+                main: 'src/worker.mjs',
+                compatibility_date: '2026-11-04',
+                limits: { cpu_ms: 30000 },
+                observability: { enabled: true },
+                assets: {
+                    directory: './assets',
+                    binding: 'ASSETS',
+                    run_worker_first: true,
+                },
+                vars: {
+                    APP_URL: 'https://stephen-raenah-wedding.workers.dev',
+                },
+                d1_databases: generated.d1_databases,
+                durable_objects: generated.durable_objects,
+                migrations: generated.migrations,
+            },
+            null,
+            4,
+        ) + '\n',
     );
-    writeFileSync(configPath, config);
 };
 
 const remoteMigrations = () => {

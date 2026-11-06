@@ -3,14 +3,14 @@
     "name": "stephen-raenah-wedding",
     "main": "src/worker.mjs",
     "compatibility_date": "2026-11-04",
-    "limits": {
-        "cpu_ms": 30000
-    },
     "observability": {
         "enabled": true
     },
     // PHP answers every route. Do not set not_found_handling to
     // single-page-application: that would hide Laravel behind a static shell.
+    // D1 and the cache Durable Object are added by scripts/cloudflare-prepare.mjs
+    // after the database exists. A placeholder database id fails Workers Builds
+    // with "unable to verify Worker" before the build command runs.
     "assets": {
         "directory": "./assets",
         "binding": "ASSETS",
@@ -18,26 +18,5 @@
     },
     "vars": {
         "APP_URL": "https://stephen-raenah-wedding.workers.dev"
-    },
-    "d1_databases": [
-        {
-            "binding": "DB",
-            "database_name": "stephen-raenah-wedding",
-            "database_id": "00000000-0000-0000-0000-000000000000"
-        }
-    ],
-    "durable_objects": {
-        "bindings": [
-            {
-                "name": "CACHE_HUB",
-                "class_name": "CacheHub"
-            }
-        ]
-    },
-    "migrations": [
-        {
-            "tag": "cache-v1",
-            "new_sqlite_classes": ["CacheHub"]
-        }
-    ]
+    }
 }
