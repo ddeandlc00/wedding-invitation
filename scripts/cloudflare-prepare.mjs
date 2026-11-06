@@ -174,6 +174,25 @@ const uploadAppKey = (key) => {
     }
 };
 
+const bakeOpcache = () => {
+    const script = join(root, 'node_modules/@workersphp/runtime/tools/bake-opcache.mjs');
+    const appZip = join(staging, 'assets/app.zip');
+    const opcacheZip = join(staging, 'assets/opcache.zip');
+    const probe = spawnSync(process.execPath, ['--experimental-wasm-jspi', '-e', 'process.exit(0)'], {
+        encoding: 'utf8',
+    });
+    const args = [
+        ...(probe.status === 0 ? ['--experimental-wasm-jspi'] : []),
+        script,
+        appZip,
+        opcacheZip,
+        'php-wasm-85-jspi',
+    ];
+
+    console.error('Precompiling PHP so the first request does not exhaust WebAssembly memory...');
+    run(process.execPath, args);
+};
+
 const copyAssets = () => {
     rmSync(join(root, 'assets'), { recursive: true, force: true });
     mkdirSync(join(root, 'assets'), { recursive: true });
@@ -413,6 +432,10 @@ try {
         '--env',
         'APP_TIMEZONE=Asia/Manila',
     ]);
+    if (process.platform !== 'win32') {
+        bakeOpcache();
+    }
+
     copyAssets();
     rememberDatabaseId();
     applySchema();

@@ -7,6 +7,8 @@ import wasm from '@workersphp/php-wasm-jspi/php8.5-web.mjs.wasm';
 
 export const CacheHub = createCacheHubClass();
 
+console.log('[DIAG] Worker entry initialized');
+
 const laravel = createLaravelWorker({
     loader,
     wasm,
@@ -37,6 +39,8 @@ export default {
         const url = new URL(request.url);
 
         if (url.pathname === '/_cf/health') {
+            console.log('[DIAG] Worker responded without starting PHP');
+
             return Response.json({
                 worker: 'stephen-raenah-wedding',
                 runtime: '@workersphp/php-wasm-jspi',
@@ -44,7 +48,18 @@ export default {
             });
         }
 
-        return laravel.fetch(request, env, ctx);
+        console.log('[DIAG] PHP request started');
+
+        try {
+            const response = await laravel.fetch(request, env, ctx);
+            console.log('[DIAG] Response returned');
+
+            return response;
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'unknown error';
+            console.log(`[DIAG] PHP request failed: ${message.slice(0, 200)}`);
+            throw error;
+        }
     },
     queue: (batch, env, ctx) => laravel.queue(batch, env, ctx),
     scheduled: (event, env, ctx) => laravel.scheduled(event, env, ctx),
