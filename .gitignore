@@ -19,6 +19,7 @@
 .dev.vars.*
 !.dev.vars.example
 .workersphp
+.tools
 /assets/**
 !/assets/.gitkeep
 .phpactor.json

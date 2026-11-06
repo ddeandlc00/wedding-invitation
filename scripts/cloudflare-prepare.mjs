@@ -3,6 +3,7 @@
 import { spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import {
+    chmodSync,
     cpSync,
     existsSync,
     mkdtempSync,
@@ -13,7 +14,7 @@ import {
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { delimiter, join } from 'node:path';
 
 const root = process.cwd();
 const workerName = 'stephen-raenah-wedding';
@@ -53,6 +54,71 @@ const capture = (command, args, options = {}) =>
 
 const hasCommand = (command) => capture(command, ['--version']).status === 0;
 
+const toolsBin = join(root, '.tools', 'bin');
+const phpArchiveUrl = 'https://dl.static-php.dev/static-php-cli/common/php-8.4.23-cli-linux-x86_64.tar.gz';
+
+const findNamedFile = (directory, name) => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+        const path = join(directory, entry.name);
+
+        if (entry.isDirectory()) {
+            const found = findNamedFile(path, name);
+
+            if (found) {
+                return found;
+            }
+        } else if (entry.name === name) {
+            return path;
+        }
+    }
+
+    return null;
+};
+
+const installUserlandTools = () => {
+    mkdirSync(toolsBin, { recursive: true });
+
+    if (!hasCommand('php')) {
+        console.error('Downloading PHP...');
+        const archive = join(root, '.tools', 'php.tar.gz');
+        const extracted = join(root, '.tools', 'php');
+        run('curl', ['-fsSL', '-o', archive, phpArchiveUrl]);
+        rmSync(extracted, { recursive: true, force: true });
+        mkdirSync(extracted, { recursive: true });
+        run('tar', ['-xzf', archive, '-C', extracted]);
+        const binary = findNamedFile(extracted, 'php');
+
+        if (!binary) {
+            throw new Error('The PHP archive did not contain a php binary.');
+        }
+
+        cpSync(binary, join(toolsBin, 'php'));
+        chmodSync(join(toolsBin, 'php'), 0o755);
+    }
+
+    if (!hasCommand('composer')) {
+        console.error('Downloading Composer...');
+        run('curl', [
+            '-fsSL',
+            '-o',
+            join(toolsBin, 'composer.phar'),
+            'https://getcomposer.org/download/latest-stable/composer.phar',
+        ]);
+        writeFileSync(
+            join(toolsBin, 'composer'),
+            '#!/bin/sh\nexec php "$(dirname "$0")/composer.phar" "$@"\n',
+        );
+        chmodSync(join(toolsBin, 'composer'), 0o755);
+    }
+
+    if (!hasCommand('zip')) {
+        cpSync(join(root, 'scripts', 'zip-shim.py'), join(toolsBin, 'zip'));
+        chmodSync(join(toolsBin, 'zip'), 0o755);
+    }
+
+    process.env.PATH = `${toolsBin}${delimiter}${process.env.PATH ?? ''}`;
+};
+
 const ensureBuildTools = () => {
     const missing = ['php', 'composer', 'zip'].filter((command) => !hasCommand(command));
 
@@ -61,15 +127,7 @@ const ensureBuildTools = () => {
             throw new Error(`Install ${missing.join(', ')} before packing the app for Cloudflare.`);
         }
 
-        console.error(`Installing ${missing.join(', ')}...`);
-        run('apt-get', ['update'], {
-            env: { ...process.env, DEBIAN_FRONTEND: 'noninteractive' },
-        });
-        run(
-            'apt-get',
-            ['install', '-y', 'php-cli', 'php-mbstring', 'php-xml', 'php-curl', 'php-sqlite3', 'unzip', 'zip', 'composer'],
-            { env: { ...process.env, DEBIAN_FRONTEND: 'noninteractive' } },
-        );
+        installUserlandTools();
     }
 
     const sqlite = capture('php', ['-r', 'exit(extension_loaded("pdo_sqlite") ? 0 : 1);']);
