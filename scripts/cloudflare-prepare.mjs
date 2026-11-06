@@ -208,7 +208,7 @@ const rememberDatabaseId = () => {
                     run_worker_first: true,
                 },
                 vars: {
-                    APP_URL: 'https://stephen-raenah-wedding.workers.dev',
+                    APP_URL: 'https://stephen-raenah-wedding.josefernandodc-dev.workers.dev',
                 },
                 d1_databases: generated.d1_databases,
                 durable_objects: generated.durable_objects,
