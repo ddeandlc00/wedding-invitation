@@ -7,7 +7,7 @@ import wasm from '@workersphp/php-wasm-jspi/php8.5-web.mjs.wasm';
 
 export const CacheHub = createCacheHubClass();
 
-export default createLaravelWorker({
+const laravel = createLaravelWorker({
     loader,
     wasm,
     envVars: (env) => ({
@@ -27,3 +27,21 @@ export default createLaravelWorker({
     }),
     cacheHubBinding: 'CACHE_HUB',
 });
+
+export default {
+    async fetch(request, env, ctx) {
+        const url = new URL(request.url);
+
+        if (url.pathname === '/_cf/health') {
+            return Response.json({
+                worker: 'stephen-raenah-wedding',
+                runtime: '@workersphp/php-wasm-jspi',
+                php: '8.5.2',
+            });
+        }
+
+        return laravel.fetch(request, env, ctx);
+    },
+    queue: (batch, env, ctx) => laravel.queue(batch, env, ctx),
+    scheduled: (event, env, ctx) => laravel.scheduled(event, env, ctx),
+};

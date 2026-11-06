@@ -111,8 +111,39 @@ const installUserlandTools = () => {
         chmodSync(join(toolsBin, 'composer'), 0o755);
     }
 
-    // The image's zip keeps nested node_modules files, which blows past the 25 MB asset limit.
-    cpSync(join(root, 'scripts', 'zip-shim.py'), join(toolsBin, 'zip'));
+    const systemZip = capture('sh', ['-c', 'command -v zip']).stdout?.trim() || '/usr/bin/zip';
+    writeFileSync(
+        join(toolsBin, 'zip'),
+        `#!/bin/sh
+stash="$PWD/../.wedding-pack-stash"
+mkdir -p "$stash"
+restore() {
+    if [ -d "$stash/node_modules" ] && [ ! -d node_modules ]; then
+        mv "$stash/node_modules" node_modules
+    fi
+    if [ -d "$stash/dot-git" ] && [ ! -d .git ]; then
+        mv "$stash/dot-git" .git
+    fi
+}
+trap restore EXIT
+if [ -d node_modules ]; then
+    rm -rf "$stash/node_modules"
+    mv node_modules "$stash/node_modules"
+fi
+if [ -d .git ]; then
+    rm -rf "$stash/dot-git"
+    mv .git "$stash/dot-git"
+fi
+if [ -d vendor ]; then
+    find vendor -type d \\( -name tests -o -name Tests -o -name .github \\) -exec rm -rf {} + 2>/dev/null || true
+fi
+"${systemZip}" "$@"
+status=$?
+restore
+trap - EXIT
+exit $status
+`,
+    );
     chmodSync(join(toolsBin, 'zip'), 0o755);
     process.env.PATH = `${toolsBin}${delimiter}${process.env.PATH ?? ''}`;
 };
@@ -197,7 +228,8 @@ const rememberDatabaseId = () => {
                 $schema: './node_modules/wrangler/config-schema.json',
                 name: workerName,
                 main: 'src/worker.mjs',
-                compatibility_date: '2026-11-04',
+                compatibility_date: '2026-08-01',
+                compatibility_flags: ['no_nodejs_compat', 'no_nodejs_compat_v2'],
                 observability: { enabled: true },
                 assets: {
                     directory: './assets',
