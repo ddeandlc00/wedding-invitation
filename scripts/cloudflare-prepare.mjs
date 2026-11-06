@@ -111,39 +111,7 @@ const installUserlandTools = () => {
         chmodSync(join(toolsBin, 'composer'), 0o755);
     }
 
-    const systemZip = capture('sh', ['-c', 'command -v zip']).stdout?.trim() || '/usr/bin/zip';
-    writeFileSync(
-        join(toolsBin, 'zip'),
-        `#!/bin/sh
-stash="$PWD/../.wedding-pack-stash"
-mkdir -p "$stash"
-restore() {
-    if [ -d "$stash/node_modules" ] && [ ! -d node_modules ]; then
-        mv "$stash/node_modules" node_modules
-    fi
-    if [ -d "$stash/dot-git" ] && [ ! -d .git ]; then
-        mv "$stash/dot-git" .git
-    fi
-}
-trap restore EXIT
-if [ -d node_modules ]; then
-    rm -rf "$stash/node_modules"
-    mv node_modules "$stash/node_modules"
-fi
-if [ -d .git ]; then
-    rm -rf "$stash/dot-git"
-    mv .git "$stash/dot-git"
-fi
-if [ -d vendor ]; then
-    find vendor -type d \\( -name tests -o -name Tests -o -name .github \\) -exec rm -rf {} + 2>/dev/null || true
-fi
-"${systemZip}" "$@"
-status=$?
-restore
-trap - EXIT
-exit $status
-`,
-    );
+    cpSync(join(root, 'scripts', 'zip-shim.py'), join(toolsBin, 'zip'));
     chmodSync(join(toolsBin, 'zip'), 0o755);
     process.env.PATH = `${toolsBin}${delimiter}${process.env.PATH ?? ''}`;
 };
