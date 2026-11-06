@@ -54,7 +54,7 @@ const capture = (command, args, options = {}) =>
 
 const hasCommand = (command) => capture(command, ['--version']).status === 0;
 
-const toolsBin = join(root, '.tools', 'bin');
+const toolsBin = join(tmpdir(), 'wedding-cloudflare-tools', 'bin');
 const phpArchiveUrl = 'https://dl.static-php.dev/static-php-cli/common/php-8.4.23-cli-linux-x86_64.tar.gz';
 
 const findNamedFile = (directory, name) => {
@@ -80,8 +80,8 @@ const installUserlandTools = () => {
 
     if (!hasCommand('php')) {
         console.error('Downloading PHP...');
-        const archive = join(root, '.tools', 'php.tar.gz');
-        const extracted = join(root, '.tools', 'php');
+        const archive = join(tmpdir(), 'wedding-cloudflare-php.tar.gz');
+        const extracted = join(tmpdir(), 'wedding-cloudflare-php');
         run('curl', ['-fsSL', '-o', archive, phpArchiveUrl]);
         rmSync(extracted, { recursive: true, force: true });
         mkdirSync(extracted, { recursive: true });
@@ -111,22 +111,20 @@ const installUserlandTools = () => {
         chmodSync(join(toolsBin, 'composer'), 0o755);
     }
 
-    if (!hasCommand('zip')) {
-        cpSync(join(root, 'scripts', 'zip-shim.py'), join(toolsBin, 'zip'));
-        chmodSync(join(toolsBin, 'zip'), 0o755);
-    }
-
+    // The image's zip keeps nested node_modules files, which blows past the 25 MB asset limit.
+    cpSync(join(root, 'scripts', 'zip-shim.py'), join(toolsBin, 'zip'));
+    chmodSync(join(toolsBin, 'zip'), 0o755);
     process.env.PATH = `${toolsBin}${delimiter}${process.env.PATH ?? ''}`;
 };
 
 const ensureBuildTools = () => {
     const missing = ['php', 'composer', 'zip'].filter((command) => !hasCommand(command));
 
-    if (missing.length > 0) {
-        if (process.platform === 'win32') {
+    if (process.platform === 'win32') {
+        if (missing.length > 0) {
             throw new Error(`Install ${missing.join(', ')} before packing the app for Cloudflare.`);
         }
-
+    } else {
         installUserlandTools();
     }
 

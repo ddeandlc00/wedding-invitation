@@ -31,12 +31,25 @@ def excluded(path, patterns):
     return False
 
 
-def files_under(source):
+def files_under(source, patterns):
     if os.path.isfile(source):
         yield source
         return
 
-    for directory, _dirnames, filenames in os.walk(source):
+    for directory, dirnames, filenames in os.walk(source):
+        kept = []
+
+        for dirname in dirnames:
+            child = os.path.join(directory, dirname)
+            name = archive_name(child)
+
+            if dirname in {'.git', 'node_modules', '.tools', '.workersphp'} or excluded(name, patterns):
+                continue
+
+            kept.append(dirname)
+
+        dirnames[:] = kept
+
         for filename in filenames:
             yield os.path.join(directory, filename)
 
@@ -56,8 +69,18 @@ def main(argv):
         return 0
 
     positionals = []
+    patterns = []
+    excluding = False
 
     for arg in argv[1:]:
+        if arg == '-x':
+            excluding = True
+            continue
+
+        if excluding:
+            patterns.append(arg)
+            continue
+
         if arg.startswith('-') and not arg.startswith('--'):
             continue
 
@@ -67,13 +90,7 @@ def main(argv):
         print('usage: zip [-qr] archive files [-x patterns]', file=sys.stderr)
         return 1
 
-    if '-x' in positionals:
-        split = positionals.index('-x')
-        sources = positionals[1:split]
-        patterns = positionals[split + 1 :]
-    else:
-        sources = positionals[1:]
-        patterns = []
+    sources = positionals[1:] or ['.']
 
     archive = positionals[0]
     sources = sources or ['.']
@@ -84,7 +101,7 @@ def main(argv):
         existing = set(bundle.namelist())
 
         for source in sources:
-            for path in files_under(source):
+            for path in files_under(source, patterns):
                 name = archive_name(path)
 
                 if name == output or name in existing or excluded(name, patterns):
