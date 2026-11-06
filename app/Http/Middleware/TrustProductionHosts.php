@@ -15,7 +15,10 @@ class TrustProductionHosts extends Middleware
             return ['.*'];
         }
 
-        $hosts = [$this->allSubdomainsOfApplicationUrl()];
+        $hosts = [
+            $this->allSubdomainsOfApplicationUrl(),
+            '^(.+\.)?workers\.dev$',
+        ];
 
         foreach (['VERCEL_URL', 'VERCEL_BRANCH_URL', 'VERCEL_PROJECT_PRODUCTION_URL'] as $variable) {
             $hosts[] = $this->patternForHost($this->environmentValue($variable));

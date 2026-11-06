@@ -27,5 +27,6 @@ class TrustedHostsTest extends TestCase
 
         $this->assertContains('^(.+\.)?'.preg_quote('localhost').'$', $patterns);
         $this->assertContains('^'.preg_quote('wedding-invitation-abc.vercel.app').'$', $patterns);
+        $this->assertContains('^(.+\.)?workers\.dev$', $patterns);
     }
 }

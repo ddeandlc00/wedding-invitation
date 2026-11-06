@@ -22,8 +22,9 @@ const laravel = createLaravelWorker({
         TRUSTED_PROXIES: '*',
     }),
     phpBindings: (env) => ({ cfd1: { DB: env.DB } }),
-    configOverrides: () => ({
+    configOverrides: (env) => ({
         'database.default': 'cfd1',
+        'app.url': env.APP_URL,
         'app.timezone': 'Asia/Manila',
         'cache.limiter': 'do',
     }),
